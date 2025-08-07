@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Diverging Bar Chart</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 20px;
+    }
+    textarea {
+      width: 300px;
+      height: 100px;
+    }
+    #chart-container {
+      width: 700px;
+      height: 500px;
+      margin-top: 40px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Create Your Diverging Bar Chart</h2>
+
+  <label>Import CSV (Category, Value):</label><br>
+  <input type="file" id="csvInput" accept=".csv" /><br><br>
+
+  <label>Categories (comma-separated):</label><br>
+  <textarea id="categories">Equipment, Staff, Consumables, Travel, Total</textarea><br><br>
+
+  <label>Values (comma-separated):</label><br>
+  <textarea id="values">64083.23, -108861, -29278.9, -10970.3, 41989.92</textarea><br><br>
+
+  <button onclick="generateChart()">Generate Chart</button>
+
+  <div id="chart-container">
+    <canvas id="myChart"></canvas>
+  </div>
+
+  <script>
+    // CSV Import
+    document.getElementById('csvInput').addEventListener('change', function (e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function (event) {
+        const lines = event.target.result.trim().split('\n');
+        const categories = [];
+        const values = [];
+
+        lines.forEach(line => {
+          const [cat, val] = line.split(',');
+          categories.push(cat.trim());
+          values.push(parseFloat(val.trim()));
+        });
+
+        // Update the textareas
+        document.getElementById('categories').value = categories.join(', ');
+        document.getElementById('values').value = values.join(', ');
+
+        // Auto-generate chart
+        generateChart();
+      };
+
+      reader.readAsText(file);
+    });
+
+    function generateChart() {
+      const ctx = document.getElementById('myChart').getContext('2d');
+
+      const cats = document.getElementById('categories').value.split(',').map(c => c.trim());
+      const vals = document.getElementById('values').value.split(',').map(v => parseFloat(v.trim()));
+
+      const positives = vals.map(v => v > 0 ? v / 1000 : 0);
+      const negatives = vals.map(v => v < 0 ? v / 1000 : 0);
+
+      if (window.barChart) {
+        window.barChart.destroy();
+      }
+
+      window.barChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: cats,
+          datasets: [
+            {
+              label: 'Positive',
+              data: positives,
+              backgroundColor: 'rgba(54, 162, 235, 0.7)'
+            },
+            {
+              label: 'Negative',
+              data: negatives,
+              backgroundColor: 'rgba(255, 99, 132, 0.7)'
+            }
+          ]
+        },
+        options: {
+          indexAxis: 'y',
+          plugins: {
+            title: {
+              display: true,
+              text: 'Diverging Bar Chart (Values in Thousands)'
+            }
+          },
+          responsive: true,
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: 'Value (×10³)'
+              }
+            }
+          }
+        }
+      });
+    }
+  </script>
+
+</body>
+</html>
