@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Diverging Bar Chart</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 20px;
+    }
+    textarea {
+      width: 300px;
+      height: 100px;
+    }
+    #chart-container {
+      width: 700px;
+      height: 500px;
+      margin-top: 40px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Create Your Diverging Bar Chart</h2>
+
+  <label>Categories (comma-separated):</label><br>
+  <textarea id="categories">Equipment, Staff, Consumables, Travel, Total</textarea><br><br>
+
+  <label>Values (comma-separated):</label><br>
+  <textarea id="values">64083.23, -108861, -29278.9, -10970.3, 41989.92</textarea><br><br>
+
+  <button onclick="generateChart()">Generate Chart</button>
+
+  <div id="chart-container">
+    <canvas id="myChart"></canvas>
+  </div>
+
+  <script>
+    function generateChart() {
+      const ctx = document.getElementById('myChart').getContext('2d');
+
+      // Get user input
+      const cats = document.getElementById('categories').value.split(',').map(c => c.trim());
+      const vals = document.getElementById('values').value.split(',').map(v => parseFloat(v.trim()));
+
+      // Separate positive and negative
+      const positives = vals.map(v => v > 0 ? v / 1000 : 0);
+      const negatives = vals.map(v => v < 0 ? v / 1000 : 0);
+
+      // Destroy previous chart if it exists
+      if (window.barChart) {
+        window.barChart.destroy();
+      }
+
+      // Create chart
+      window.barChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: cats,
+          datasets: [
+            {
+              label: 'Positive',
+              data: positives,
+              backgroundColor: 'rgba(54, 162, 235, 0.7)'
+            },
+            {
+              label: 'Negative',
+              data: negatives,
+              backgroundColor: 'rgba(255, 99, 132, 0.7)'
+            }
+          ]
+        },
+        options: {
+          indexAxis: 'y',
+          plugins: {
+            title: {
+              display: true,
+              text: 'Diverging Bar Chart (Values in Thousands)'
+            }
+          },
+          responsive: true,
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: 'Value (×10³)'
+              }
+            }
+          }
+        }
+      });
+    }
+  </script>
+
+</body>
+</html>
